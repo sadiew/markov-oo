@@ -62,17 +62,20 @@ class TwitterableMarkovGenerator(SimpleMarkovGenerator):
     def make_text(self, chains):
         """Takes dictionary of markov chains; returns random text."""
 
+        punctuation ='!?%.]^_|}'
         key = choice(chains.keys())
-        #words = [key[0], key[1]]
         twitter_string = key[0][0].upper() + key[0][1:] + " " + key[1]
-        while key in chains and len(twitter_string) < 120:
+        
+        while key in chains:
             word = choice(chains[key])
-            #words.append(word)
             twitter_string = twitter_string + " " + word 
             key = (key[1], word)
 
-        #print len(twitter_string)
-        return twitter_string + "...woot"
+            if word[-1] in punctuation and 100 < len(twitter_string) <= 140:
+                return twitter_string   
+            
+        return twitter_string 
+
 
     def ask_user(self): 
         print self.make_text(self.chains)
