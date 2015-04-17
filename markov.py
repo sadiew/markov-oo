@@ -4,6 +4,10 @@ from random import choice
 
 class SimpleMarkovGenerator(object):
 
+    def __init__(self, filenames):
+       self.corpus = self.read_files(filenames)
+       self.chains = self.make_chains(self.corpus)
+
     def read_files(self, filenames):
         """Given a list of files, make chains from them."""
         
@@ -18,7 +22,7 @@ class SimpleMarkovGenerator(object):
         """Takes input text as string; stores chains."""
         chains = {}
 
-        words = corpus.split()
+        words = self.corpus.split()
 
         for i in range(len(words) - 2):
             key = (words[i], words[i + 1])
@@ -50,25 +54,45 @@ class SimpleMarkovGenerator(object):
             words.append(word)
             key = (key[1], word)
 
-        return " ".join(words)
+        output_text = " ".join(words)
+        return output_text[0].upper + output_text[1:]
 
+class TwitterableMarkovGenerator(SimpleMarkovGenerator):
+
+    def make_text(self, chains):
+        """Takes dictionary of markov chains; returns random text."""
+
+        key = choice(chains.keys())
+        #words = [key[0], key[1]]
+        twitter_string = key[0][0].upper() + key[0][1:] + " " + key[1]
+        while key in chains and len(twitter_string) < 120:
+            word = choice(chains[key])
+            #words.append(word)
+            twitter_string = twitter_string + " " + word 
+            key = (key[1], word)
+
+        #print len(twitter_string)
+        return twitter_string + "...woot"
+
+    def ask_user(self): 
+        print self.make_text(self.chains)
+        reply = raw_input("Would you like to create another tweet? Y/N \n").upper()
+
+        while reply == 'Y': 
+            print self.make_text(self.chains)
+            reply = raw_input("Would you like to create another tweet? Y/N \n").upper()
 
 if __name__ == "__main__":
 
     filenames = sys.argv[1:]
-    simple_markov = SimpleMarkovGenerator()
-    corpus = simple_markov.read_files(filenames) 
-    chains = simple_markov.make_chains(corpus)
+    # simple_markov = SimpleMarkovGenerator(filenames)
+    twitter_markov = TwitterableMarkovGenerator(filenames)
     
-    # we should get list of filenames from sys.argv
-    # we should make an instance of the class
-    # we should call the read_files method with the list of filenames
-    # we should call the make_text method 5x
-    for i in range(5):
-        print simple_markov.make_text(chains) 
-    
+    # print twitter_markov.make_text(twitter_markov.chains)
+    # reply = raw_input("Would you like to create another tweet? Y/N \n").upper()
 
-# simple_markov = SimpleMarkovGenerator()
-# corpus = simple_markov.read_files(['green-eggs.txt', 'sadie-pam.txt'])
-# chains = simple_markov.make_chains(corpus)
-# simple_markov.make_text(chains)
+    # while reply == 'Y': 
+    #     print twitter_markov.make_text(twitter_markov.chains)
+    #     reply = raw_input("Would you like to create another tweet? Y/N \n").upper()
+
+    twitter_markov.ask_user()
